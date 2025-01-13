@@ -1,35 +1,46 @@
+# CockroachDB Test
+
 [![Java CI with Maven](https://github.com/cloudneutral/cockroachdb-test/actions/workflows/maven.yml/badge.svg)](https://github.com/cloudneutral/cockroachdb-test/actions/workflows/maven.yml)
 
-# CockroachDB Test
+<!-- TOC -->
+* [CockroachDB Test](#cockroachdb-test)
+  * [Disclaimer](#disclaimer)
+  * [Supported Platforms and Versions](#supported-platforms-and-versions)
+* [Getting Started](#getting-started)
+  * [Maven Configuration](#maven-configuration)
+  * [JUnit5 Example](#junit5-example)
+  * [Spring Boot Example](#spring-boot-example)
+  * [Getting Help](#getting-help)
+    * [Reporting Issues](#reporting-issues)
+  * [Versioning](#versioning)
+  * [Building from Source](#building-from-source)
+    * [Prerequisites](#prerequisites)
+    * [Clone the project](#clone-the-project)
+    * [Build the project](#build-the-project)
+  * [Terms of Use](#terms-of-use)
+<!-- TOC -->     
 
 <img align="left" src="logo.png" />
 
-The goal of this Java library is to provide for embedded database integration tests against 
-a local [CockroachDB](https://www.cockroachlabs.com/) instance running either in [single node](https://www.cockroachlabs.com/docs/stable/cockroach-start-single-node) 
-mode or [demo](https://www.cockroachlabs.com/docs/stable/cockroach-demo) mode. It supports both [Junit 4](http://junit.org/junit4/) and [Junit 5](http://junit.org/junit5/).
+Enables embedded database integration tests against a local [CockroachDB](https://www.cockroachlabs.com/) instance running 
+either in [single node](https://www.cockroachlabs.com/docs/stable/cockroach-start-single-node) mode or [demo](https://www.cockroachlabs.com/docs/stable/cockroach-demo) mode. Supports both [Junit 4](http://junit.org/junit4/) and [Junit 5](http://junit.org/junit5/). 
 
-Integration tests are more realistic alternative than local [mock](https://site.mockito.org/) or fake/stub 
-unit tests. One typical choice for database-oriented integration tests is 
-to use [H2](https://www.h2database.com/html/main.html) which a capable in-memory SQL database written in Java. 
-The main limiting factor is that you are not really testing against CockroachDB 
-but instead the dialect and semantics of H2.
+Because CockroachDB is written in Go it doesn't naturally embed itself into a JVM instance. A close
+alternative is therefore to run a local and separate CockroachDB process that is controlled and
+governed by the integration test cycle.
 
-CockroachDB is natively written in Go, and as such doesn't embed itself into a JVM instance.
-A close alternative however, is to run a local and separate CockroachDB process that is 
-controlled and governed by the integration test cycle. 
-
-Using this test extension you can start with a clean machine, have the CockroachDB binary 
-downloaded automatically, expanded and a local process started and initialized. At the
-end of the test cycle, the inverse takes place where the process is stopped and all 
-local files deleted. The downloaded binary can be cached and re-used between test runs
-to speed things up.
+Otherwise, a typical choice for database-oriented integration tests is to use [H2](https://www.h2database.com/html/main.html), which a capable 
+in-memory SQL database written in Java. The limiting factor then however, is that you are not really 
+testing CockroachDB but instead the dialect and semantics of H2.
 
 ## Disclaimer
 
 This project is not supported by Cockroach Labs. Use of this library is entirely 
 at your own risk and Cockroach Labs makes no guarantees or warranties about its operation.
 
-See [MIT](LICENSE.txt) license for terms and conditions.
+## Terms of Use
+
+See [MIT](LICENSE.txt) for terms and conditions.
 
 ## Supported Platforms and Versions
 
@@ -38,11 +49,16 @@ See [MIT](LICENSE.txt) license for terms and conditions.
 * Spring3
 * Linux, Mac and Windows
 * CockroachDB Dedicated v23.1 or later
-* Java17+ LTS SDK
+* JDK17+
 
 # Getting Started
 
 A quick getting started guide using CockroachDB integration tests.
+
+The goal is to download a CockroachDB binary, expand it and start and initialize 
+a local database instance automatically as part of the test cycle. At the end of the test cycle, 
+the inverse takes place where the process is stopped and all local files deleted. 
+The downloaded binary can also be cached and re-used between test runs to speed things up.
 
 ## Maven Configuration
 
@@ -50,9 +66,9 @@ Add this dependency to your `pom.xml` file if you are using Junit5:
 
 ```xml
 <dependency>
-    <groupId>io.cockroachdb.test</groupId>
+    <groupId>io.github.kai-niemi.cockroachdb.test</groupId>
     <artifactId>cockroachdb-test-junit5</artifactId>
-    <version>{version}</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -60,39 +76,11 @@ Alternatively, if you are using Junit4:
 
 ```xml
 <dependency>
-    <groupId>io.cockroachdb.test</groupId>
+    <groupId>io.github.kai-niemi.cockroachdb.test</groupId>
     <artifactId>cockroachdb-test-junit4</artifactId>
-    <version>{version}</version>
+    <version>2.0.0</version>
 </dependency>
 ```
-
-Then add the Maven repository to your `pom.xml` file (alternatively in Maven's [settings.xml](https://maven.apache.org/settings.html)):
-
-```xml
-<repository>
-    <id>cockroachdb-test</id>
-    <name>Maven Packages</name>
-    <url>https://maven.pkg.github.com/cloudneutral/cockroachdb-test</url>
-    <snapshots>
-        <enabled>true</enabled>
-    </snapshots>
-</repository>
-```
-
-Next, you need to authenticate to GitHub Packages by creating a personal access token (classic)
-that includes the `read:packages` scope. For more information, see [Authenticating to GitHub Packages](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry#authenticating-to-github-packages).
-
-Add your personal access token to the servers section in your [settings.xml](https://maven.apache.org/settings.html):
-
-```xml
-<server>
-    <id>github</id>
-    <username>your-github-name</username>
-    <password>your-access-token</password>
-</server>
-```
-
-Take note that the server and repository id's must be an exact match.
 
 ## JUnit5 Example
 
@@ -101,7 +89,7 @@ used to register and configure the CockroachDB extension.
 
 ```java
 @Cockroach(
-        version = "v24.2.0",
+        version = "v24.3.2",
         architecture = Cockroach.Architecture.amd64,
         command = Cockroach.Command.demo,
         demoFlags = @DemoFlags(global = true, nodes = 9)
@@ -149,9 +137,9 @@ Add this dependency to your `pom.xml` file if you are using Spring 3.x with JUni
 
 ```xml
 <dependency>
-    <groupId>io.cockroachdb.test</groupId>
+    <groupId>io.github.kai-niemi.cockroachdb.test</groupId>
     <artifactId>cockroachdb-test-spring3</artifactId>
-    <version>{version}</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -181,7 +169,7 @@ A more complete example:
 @SpringBootTest
 @ContextConfiguration(loader = EmbeddedCockroachLoader.class)
 @Cockroach(
-        version = "v24.2.0",
+        version = "v24.3.2",
         architecture = Cockroach.Architecture.arm64,
         command = Cockroach.Command.start_single_node,
         experimental = true,
@@ -230,15 +218,12 @@ This library follows [Semantic Versioning](http://semver.org/).
 
 ## Building from Source
 
-CockroachDB Test requires Java 17 (or later) LTS. 
+CockroachDB Test requires Java 17 (or later). 
 
 ### Prerequisites
 
-- JDK17+ LTS for building (OpenJDK compatible)
+- JDK17+ for building (OpenJDK compatible)
 - Maven 3+ (optional, embedded)
-
-If you want to build with the regular `mvn` command,
-you will need [Maven v3.x](https://maven.apache.org/run-maven/index.html) or above.
 
 Install the JDK (Linux):
 
@@ -265,9 +250,3 @@ cd cockroachdb-test
 chmod +x mvnw
 ./mvnw clean install
 ```
-
-If you want to build with the regular mvn command, you will need [Maven v3.5.0](https://maven.apache.org/run-maven/index.html) or above.
-
-## Terms of Use
-
-See [MIT](LICENSE.txt) for terms and conditions.

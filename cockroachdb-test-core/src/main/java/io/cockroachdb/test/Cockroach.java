@@ -17,7 +17,7 @@ public @interface Cockroach {
      * Defines the version to download.
      * @see <a href="https://www.cockroachlabs.com/docs/releases/.">releases</a>
      */
-    String version() default "v24.2.0";
+    String version() default "v24.3.2";
 
     /**
      * Defines the base URL of the binaries http repository.
